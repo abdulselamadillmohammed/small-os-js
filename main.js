@@ -1,4 +1,4 @@
-import { openFile } from "node:fs/promises";
+import { open, writeFile } from "node:fs/promises";
 
 /* main.js */
 
@@ -36,6 +36,22 @@ import { openFile } from "node:fs/promises";
 let ctors;
 let rev;
 let combine;
+let save2file;
+
+save2file = async (filename) => {
+  let fd;
+  let buf;
+  fd = await open(filename, "w", 0o644);
+  if (!fd) throw new Error("Unable to open file");
+
+  buf = mkos();
+  ret = await writeFile(fd, buf);
+  fd.close(fd);
+  if (ret != undefined) {
+    throw new Error("Unable to write to file");
+  }
+  return true;
+};
 
 combine = (a, b) => {
   (a & (0xff << 8)) | (b & 0xff);
@@ -86,21 +102,41 @@ ctors = {
 let mkos;
 let part1;
 let part2;
+let exitval;
+let x;
+let y;
 
 mkos = () => {
   part1() + part2(510 - part1().length);
 };
 
 part1 = () =>
-  ctors.opy2ax(0xfbff) +
+  ctors.copy2ax(0xfbff) +
   ctors.copy2sp() +
   ctors.mov2bx(0x0000) +
-  ctors.mov2ax(combine(0x0e, "x")) +
+  ctors.mov2ax(combine(0x0e, "x".charCodeAt(0))) +
   ctors.interruptoff() +
-  ctors.halt();
+  ctors.halt() +
+  ctors.jmp();
 
 // list of bios services:https://stanislavs.org/helppc/int_10.html
 
 part2 = () => {
   ctors.padding(amt) + ctors.magic();
 };
+
+// exitval = new Boolean(save2file('file'));
+file = process.argv[2];
+if (!file) {
+  console.error("Usage: " + process.argv[1], "<filename>");
+  process.exit(1);
+}
+exitval = new Boolean(save2file(filename));
+
+// x = process.argv[0];
+// y = process.argv[1];
+
+// console.log("x", x, "y", y);
+
+if (exitval) console.log("ok");
+else console.error("failed");
