@@ -32,5 +32,14 @@ ctors = {
   copy2ax: (val) => void 0,
   copy2sp: () => void 0,
   copy2bx: (val) => void 0,
+  copy2cx: (val) => void 0,
   biosinterrupt: () => void 0,
+  interruptoff: () => void 0,
+  halt: () => void 0,
+  jmp: (addr) => void 0,
+  padding: (amt) => void 0,
+  magic: () => void 0,
 };
+
+// Disassembling command:
+// alias objdump86='objdump -M intel -b binary -m i8086'
