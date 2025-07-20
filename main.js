@@ -87,15 +87,16 @@ ctors = {
   padding: (amt) => "\x90".repeat(amt),
   magic: () => rev(0xaa55),
   print: (str) => {
+    let code = "";
     str
       .concat("\r\n")
       .split("")
-      .map(
-        (x) =>
-          ctors.copy2ax(combine(0x0e, x.charCodeAt(0))) + ctors.biosinterrupt
-      )
-      .concat(ctors.biosinterrupt())
-      .join("");
+      .forEach((char) => {
+        // For each character, load it into AL (part of AX) and call interrupt
+        code += ctors.copy2ax(combine(0x0e, char.charCodeAt(0))); // AH=0x0e (teletype), AL=char_code
+        code += ctors.biosinterrupt(); // INT 0x10
+      });
+    return code;
   },
 };
 
