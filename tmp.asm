@@ -3,7 +3,11 @@ bits 16
 
 nop
 nop
-mov ax, 0xaabb
+dd 0x0
 mov bx, 0xaabb
+mov ax, 0xaabb
 mov cx, 0xaabb
 mov sp, ax
+dd 0x0
+nop
+nop
