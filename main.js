@@ -1,3 +1,5 @@
+import { openFile } from "node:fs/promises";
+
 /* main.js */
 
 // BIOS
@@ -36,7 +38,7 @@ let rev;
 let combine;
 
 combine = (a, b) => {
-  a << 8;
+  (a & (0xff << 8)) | (b & 0xff);
 };
 
 rev = (val) => {
@@ -63,8 +65,8 @@ ctors = {
   copy2sp: () => "\x89\xc4",
   biosinterrupt: () => "\xcd\x10",
   interruptoff: () => "\xfa",
-  halt: () => "\x90\xf4",
-  jmp: (addr) => "\xeb\xfc",
+  halt: () => void "\x90\xf4",
+  jmp: () => "\xeb\xfc",
   padding: (amt) => "\x90".repeat(ant),
   magic: () => rev(0xaa55),
 };
@@ -82,7 +84,23 @@ ctors = {
 // z = y.split("").map((a) => a.charCodeAt(0));
 
 let mkos;
+let part1;
+let part2;
 
-mkos = () => copy2ax(0xfbff) + copy2sp();
+mkos = () => {
+  part1() + part2(510 - part1().length);
+};
+
+part1 = () =>
+  ctors.opy2ax(0xfbff) +
+  ctors.copy2sp() +
+  ctors.mov2bx(0x0000) +
+  ctors.mov2ax(combine(0x0e, "x")) +
+  ctors.interruptoff() +
+  ctors.halt();
 
 // list of bios services:https://stanislavs.org/helppc/int_10.html
+
+part2 = () => {
+  ctors.padding(amt) + ctors.magic();
+};
