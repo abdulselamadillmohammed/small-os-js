@@ -56,9 +56,7 @@ save2file = async (msg, filename) => {
   return true;
 };
 
-combine = (a, b) => {
-  (a & (0xff << 8)) | (b & 0xff);
-};
+combine = (a, b) => ((a & 0xff) << 8) | (b & 0xff);
 
 rev = (val) => {
   let a, b;
@@ -80,19 +78,22 @@ rev = (val) => {
 ctors = {
   copy2ax: (val) => "\xb8" + rev(val),
   copy2bx: (val) => "\xbb" + rev(val),
-  copy2cx: (val) => "\xbb" + rev(val),
+  copy2cx: (val) => "\xb9" + rev(val),
   copy2sp: () => "\x89\xc4",
   biosinterrupt: () => "\xcd\x10",
   interruptoff: () => "\xfa",
-  halt: () => void "\x90\xf4",
-  jmp: () => "\xeb\xfc",
-  padding: (amt) => "\x90".repeat(ant),
+  halt: () => "\xf4",
+  jmp: () => "\xeb\xfe",
+  padding: (amt) => "\x90".repeat(amt),
   magic: () => rev(0xaa55),
   print: (str) => {
     str
       .concat("\r\n")
       .split("")
-      .map((x) => ctors.copy2ax(combine(0x0e, x.charCodeAt(0))))
+      .map(
+        (x) =>
+          ctors.copy2ax(combine(0x0e, x.charCodeAt(0))) + ctors.biosinterrupt
+      )
       .concat(ctors.biosinterrupt())
       .join("");
   },
@@ -118,37 +119,54 @@ let x;
 let y;
 
 mkos = (msg) => {
-  part1(msg) + part2(510 - part1(msg).length);
+  const p1 = part1(msg);
+  const p2 = part2(510 - p1.length);
+  return p1 + p2;
 };
 
-part1 = () =>
-  ctors.copy2ax(0xfbff) +
+part1 = (msg) =>
+  ctors.copy2ax(0x7c00) +
   ctors.copy2sp() +
-  ctors.mov2bx(0x0000) +
+  ctors.copy2bx(0x0007) +
   ctors.print(msg) +
-  ctors.mov2ax(combine(0x0e, "x".charCodeAt(0))) +
-  //ctors.interruptoff() +
-  ctors.halt() +
-  ctors.jmp();
+  ctors.halt();
 
 // list of bios services:https://stanislavs.org/helppc/int_10.html
 
-part2 = () => {
-  ctors.padding(amt) + ctors.magic();
-};
+part2 = (amt) => ctors.padding(amt) + ctors.magic();
 
 // exitval = new Boolean(save2file('file'));
-file = process.argv[2];
-if (!file) {
-  console.error("Usage: " + process.argv[1], "<filename>");
-  process.exit(1);
-}
-exitval = new Boolean(save2file(filename));
+// file = process.argv[2];
+// if (!file) {
+//   console.error("Usage: " + process.argv[1], "<filename>");
+//   process.exit(1);
+// }
+// exitval = new Boolean(save2file(filename));
 
-// x = process.argv[0];
-// y = process.argv[1];
+// // x = process.argv[0];
+// // y = process.argv[1];
 
-// console.log("x", x, "y", y);
+// // console.log("x", x, "y", y);
 
-if (exitval) console.log("ok");
-else console.error("failed");
+// if (exitval) console.log("ok");
+// else console.error("failed");
+
+const main = async () => {
+  const file = process.argv[2];
+  if (!file) {
+    console.error("Usage: node " + process.argv[1] + " <output_filename.bin>");
+    process.exit(1);
+  }
+
+  console.log(`Building boot sector in "${file}"...`);
+
+  const exitval = await save2file(message, file);
+
+  if (exitval) {
+    console.log("✅ OK");
+  } else {
+    console.error("❌ failed");
+  }
+};
+
+main();
