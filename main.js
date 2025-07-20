@@ -28,4 +28,9 @@
 
 let ctors;
 
-ctors = {};
+ctors = {
+  copy2ax: (val) => void 0,
+  copy2sp: () => void 0,
+  copy2bx: (val) => void 0,
+  biosinterrupt: () => void 0,
+};
