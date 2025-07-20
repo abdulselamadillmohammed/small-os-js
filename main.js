@@ -32,8 +32,13 @@
 // 01011100 00000000
 
 let ctors;
-
 let rev;
+let combine;
+
+combine = (a, b) => {
+  a << 8;
+};
+
 rev = (val) => {
   let a, b;
   let mask;
@@ -55,13 +60,13 @@ ctors = {
   copy2ax: (val) => "\xb8" + rev(val),
   copy2bx: (val) => "\xbb" + rev(val),
   copy2cx: (val) => "\xbb" + rev(val),
-  copy2sp: () => void 0,
-  biosinterrupt: () => void 0,
-  interruptoff: () => void 0,
-  halt: () => void 0,
-  jmp: (addr) => void 0,
-  padding: (amt) => void 0,
-  magic: () => void 0,
+  copy2sp: () => "\x89\xc4",
+  biosinterrupt: () => "\xcd\x10",
+  interruptoff: () => "\xfa",
+  halt: () => "\x90\xf4",
+  jmp: (addr) => "\xeb\xfc",
+  padding: (amt) => "\x90".repeat(ant),
+  magic: () => rev(0xaa55),
 };
 
 // Disassembling command:
@@ -75,3 +80,9 @@ ctors = {
 // console.log(y.length);
 
 // z = y.split("").map((a) => a.charCodeAt(0));
+
+let mkos;
+
+mkos = () => copy2ax(0xfbff) + copy2sp();
+
+// list of bios services:https://stanislavs.org/helppc/int_10.html

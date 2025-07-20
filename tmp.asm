@@ -1,8 +1,8 @@
 bits 16
 org 0xfc00        ; Set origin address to BIOS load address (for emulation/debug)
 
-;mov ax, 0x7c00     ; Load stack address into AX
-mov sp, ax         ; Initialize the stack pointer
+; mov ax, 0x7c00     ; Load stack address into AX
+; mov sp, ax         ; Initialize the stack pointer
 
 ; nop
 ; nop
@@ -14,3 +14,12 @@ mov sp, ax         ; Initialize the stack pointer
 ; dd 0x0
 ; nop
 ; nop
+
+halt1:
+    nop
+    hlt
+    jmp halt1
+halt2:
+    nop
+    hlt
+    jmp halt1
