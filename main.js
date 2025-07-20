@@ -44,6 +44,7 @@ message = "Hello from JS!";
 save2file = async (msg, filename) => {
   let fd;
   let buf;
+  let ret;
   fd = await open(filename, "w", 0o644);
   if (!fd) throw new Error("Unable to open file");
 
@@ -65,8 +66,7 @@ rev = (val) => {
   mask = 0xff;
   a = val & mask;
   mask = 0xff00;
-  i = val & mask;
-  b = i >> 8;
+  b = (val & mask) >> 8;
 
   return String.fromCharCode(a).concat(String.fromCharCode(b));
 };
