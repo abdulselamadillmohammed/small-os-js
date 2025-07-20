@@ -37,15 +37,18 @@ let ctors;
 let rev;
 let combine;
 let save2file;
+let message;
 
-save2file = async (filename) => {
+message = "Hello from JS!";
+
+save2file = async (msg, filename) => {
   let fd;
   let buf;
   fd = await open(filename, "w", 0o644);
   if (!fd) throw new Error("Unable to open file");
 
-  buf = mkos();
-  ret = await writeFile(fd, buf);
+  buf = mkos(msg);
+  ret = await writeFile(fd, buf, { encoding: "ascii" });
   fd.close(fd);
   if (ret != undefined) {
     throw new Error("Unable to write to file");
@@ -85,6 +88,14 @@ ctors = {
   jmp: () => "\xeb\xfc",
   padding: (amt) => "\x90".repeat(ant),
   magic: () => rev(0xaa55),
+  print: (str) => {
+    str
+      .concat("\r\n")
+      .split("")
+      .map((x) => ctors.copy2ax(combine(0x0e, x.charCodeAt(0))))
+      .concat(ctors.biosinterrupt())
+      .join("");
+  },
 };
 
 // Disassembling command:
@@ -106,16 +117,17 @@ let exitval;
 let x;
 let y;
 
-mkos = () => {
-  part1() + part2(510 - part1().length);
+mkos = (msg) => {
+  part1(msg) + part2(510 - part1(msg).length);
 };
 
 part1 = () =>
   ctors.copy2ax(0xfbff) +
   ctors.copy2sp() +
   ctors.mov2bx(0x0000) +
+  ctors.print(msg) +
   ctors.mov2ax(combine(0x0e, "x".charCodeAt(0))) +
-  ctors.interruptoff() +
+  //ctors.interruptoff() +
   ctors.halt() +
   ctors.jmp();
 
